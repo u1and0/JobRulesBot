@@ -1,13 +1,4 @@
 "use strict";
-async function print1By1(target, text, intervalTime) {
-    let i = 0;
-    const intervalID = setInterval(() => {
-        target.textContent += text.charAt(i);
-        i++;
-        if (i === text.length)
-            clearInterval(intervalID);
-    }, intervalTime);
-}
 function search() {
     const responseElem = document.getElementById("response");
     if (responseElem === null)
@@ -29,9 +20,16 @@ function search() {
             throw new Error(`Net work error ${response.status} ${response.text}`);
         }
     })
-        .then(async (data) => {
-        await print1By1(responseElem, data.response, 20);
-        await print1By1(regulationElem, data.regulation, 5);
+        .then((data) => {
+        let i = 0;
+        const text = data.response;
+        const intervalID = setInterval(() => {
+            responseElem.textContent += text.charAt(i);
+            i++;
+            if (i === text.length)
+                clearInterval(intervalID);
+            regulationElem.textContent = data.regulation;
+        }, 20);
     })
         .catch((error) => console.error(`Error:${error}`));
 }

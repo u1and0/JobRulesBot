@@ -1,4 +1,5 @@
 import json
+from getpass import getpass
 from enum import Enum
 from dataclasses import dataclass
 from collections import UserList
@@ -9,7 +10,10 @@ import openai
 from openai.embeddings_utils import get_embedding, cosine_similarity
 import tiktoken
 
-openai.api_key = os.environ["CHATGPT_API_KEY"]
+try:
+    openai.api_key = os.environ["CHATGPT_API_KEY"]
+except KeyError:
+    openai.api_key = getpass("OpenAI token:")
 
 
 class Role(str, Enum):
@@ -93,14 +97,10 @@ class VectorFrame(pd.DataFrame):
         """
         user_prompt_length = self.get_token_length(query)
         assert user_prompt_length <= self.user_max_tokens, "システムプロンプトは1480トークン以下: {user_prompt_length}"
-        # 関連規約の抽出
-        regulations = self.regulation_search(query, *args, **kwargs)
-        if len(regulations) < 1:
-            return "関連する規約がありませんでした。別のキーワードで質問してください。"
         # システムプロンプトに関連規約を追加
         # list()をつけないと各行にsystem_promptが追加されてしまう
         system_prompt = "\n".join([VectorFrame.system_prompt] +
-                                  list(regulations.text))
+                                  list(self.text))
         system_prompt_length = self.get_token_length(system_prompt)
         print(system_prompt)
         assert system_prompt_length <= 2116, f"システムプロンプトは2116トークン以下 {system_prompt_length}"
@@ -126,7 +126,9 @@ if __name__ == "__main__":
     model_df['embedding'] = model_df['embedding'].apply(eval).apply(np.array)
     model_df = VectorFrame(model_df)
     # ここからAPI Keyが必要
+    # 関連規約の抽出
     related_rules = model_df.regulation_search("年間休日は何日ですか")
+    assert len(related_rules) > 1, "関連する規約がありませんでした。別のキーワードで質問してください。"
     print("関連規約のトークン長さ:", related_rules.token_length.sum())
-    ans = model_df.ask_regulation("年間休日は何日ですか")
+    ans = related_rules.ask_regulation("年間休日は何日ですか")
     print(ans)

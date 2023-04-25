@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI
@@ -15,10 +16,18 @@ print(model_df)
 
 @app.get("/ask/{query}")
 async def get_ask(query: str):
-    ans = model_df.ask_regulation(query, threshold=0.7, verbose=True)
-    print(model_df.get_token_length(ans), "tokens")
-    obj = {"query": query, "answer": ans}
-    print(obj)
+    related_rules = model_df.regulation_search(query,
+                                               threshold=0.7,
+                                               verbose=True)
+    related_rules_str = '\n'.join(related_rules.text)
+    resp = related_rules.ask_regulation(query)
+    print(model_df.get_token_length(resp), "tokens")
+    obj = {
+        "query": query,
+        "response": resp,
+        "related_rules": related_rules_str
+    }
+    print(json.dumps(obj, indent=2, ensure_ascii=False))
     return obj
 
 

@@ -1,32 +1,54 @@
 #!/usr/bin/env python3
 import json
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI
 import uvicorn
 from lib.vector import VectorFrame
 
+VERSION = "v0.1.0"
+# バックエンドの準備
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 # 就業規則ベクターの読み込み
 model_df = pd.read_csv("data/vkijun-embeddings.csv", usecols=[1, 3])
 model_df['embedding'] = model_df['embedding'].apply(eval).apply(np.array)
 model_df = VectorFrame(model_df)
-print(model_df)
+
+
+@app.get("/")
+async def root():
+    """/indexへリダイレクト"""
+    return RedirectResponse("/index")
+
+
+@app.get("/index")
+async def index(request: Request):
+    """メインページ"""
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "version": VERSION,
+    })
+
+
+@app.get("/hello")
+async def hello():
+    """サーバー生きているか確認"""
+    return {"message": "hello job rules bot!"}
 
 
 @app.get("/ask/{query}")
 async def get_ask(query: str):
-    related_rules = model_df.regulation_search(query,
-                                               threshold=0.7,
-                                               verbose=True)
-    related_rules_str = '\n'.join(related_rules.text)
-    resp = related_rules.ask_regulation(query)
-    print(model_df.get_token_length(resp), "tokens")
-    obj = {
-        "query": query,
-        "response": resp,
-        "related_rules": related_rules_str
-    }
+    regulations = model_df.search_regulation(query, threshold=0.7)
+    response = regulations.ask_regulation(query)
+    print(model_df.get_token_length(response), "tokens")
+    regulatinos_str = '\n'.join(regulations.text)
+    obj = {"query": query, "response": response, "regulation": regulatinos_str}
     print(json.dumps(obj, indent=2, ensure_ascii=False))
     return obj
 

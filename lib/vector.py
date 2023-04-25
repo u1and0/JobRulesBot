@@ -67,7 +67,7 @@ class VectorFrame(pd.DataFrame):
     def get_token_length(self, s: str):
         return len(self.enc.encode(s))
 
-    def regulation_search(self, query: str, threshold=0.85, verbose=False):
+    def search_regulation(self, query: str, threshold=0.85, verbose=False):
         """就業規則に関する質問を与えると、関連性の高い規約を検索して返す
         トークン数がデフォルトで2000未満になるようにして返す。
         verbose=Trueでテキストと類似度を表示する。
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     model_df = VectorFrame(model_df)
     # ここからAPI Keyが必要
     # 関連規約の抽出
-    related_rules = model_df.regulation_search("年間休日は何日ですか")
+    related_rules = model_df.search_regulation("年間休日は何日ですか")
     assert len(related_rules) > 1, "関連する規約がありませんでした。別のキーワードで質問してください。"
     print("関連規約のトークン長さ:", related_rules.token_length.sum())
     ans = related_rules.ask_regulation("年間休日は何日ですか")

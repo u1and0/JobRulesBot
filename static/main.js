@@ -8,6 +8,8 @@ function search() {
     if (regulationElem === null)
         return;
     regulationElem.innerHTML = "";
+    const details = document.querySelector("details");
+    details.removeAttribute("open");
     const keyword = document.getElementById("keyword").value;
     if (keyword === null)
         return;

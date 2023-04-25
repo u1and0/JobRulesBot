@@ -1,11 +1,15 @@
 // バックエンドに規約と回答を問い合わせ
 function search() {
+  // Reset page
   const responseElem = document.getElementById("response");
   if (responseElem === null) return;
   responseElem.innerHTML = "";
   const regulationElem = document.getElementById("regulation");
   if (regulationElem === null) return;
   regulationElem.innerHTML = "";
+  const details = document.querySelector("details");
+  details.removeAttribute("open");
+  // Search keyword
   const keyword = document.getElementById("keyword").value;
   if (keyword === null) return;
   fetch(`/ask/${encodeURIComponent(keyword)}`)

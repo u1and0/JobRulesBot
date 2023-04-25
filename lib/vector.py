@@ -34,14 +34,6 @@ class Message:
         return {"role": str(self.role), "content": self.content}
 
 
-class Messages(UserList):
-    def __init__(self, *args):
-        self.data = [i._asdict() for i in args]
-
-    def json(self):
-        return json.dumps(self.data, ensure_ascii=False)
-
-
 class VectorFrame(pd.DataFrame):
     system_prompt = """あなたは就業規則に関するエキスパートです。
     以下に与える`関連規約`を参照し、質問に対して平易な日本語で答えてください。
@@ -51,14 +43,23 @@ class VectorFrame(pd.DataFrame):
     # 関連規約
     """  # 116 tokens
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+            self,
+            *args,
+            model="gpt-3.5-turbo",
+            model_token_limit=4096,
+            max_tokens=500,
+            temperature=0.2,
+            system_max_tokens=2000,  # system promptは合計で2116
+            user_max_tokens=1480,
+            **kwargs):
         super().__init__(*args, **kwargs)
-        self.model = "gpt-3.5-turbo"
-        self.model_token_limit = 4096
-        self.max_tokens = 500
-        self.temperature = 0.2
-        self.system_max_tokens = 2000  # system promptは合計で2116
-        self.user_max_tokens = 1480
+        self.model = model
+        self.model_token_limit = model_token_limit
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        self.system_max_tokens = system_max_tokens
+        self.user_max_tokens = user_max_tokens
         # 各テキストのトークンの長さを取得
         self.enc = tiktoken.encoding_for_model(self.model)
         self["token_length"] = self.text.apply(
@@ -87,23 +88,20 @@ class VectorFrame(pd.DataFrame):
             print("cumsum rules tokens:", filtered.token_length.sum())
         return VectorFrame(filtered)
 
-    def ask_regulation(self,
-                       query: str,
-                       messages: Messages = Messages(),
-                       *args,
-                       **kwargs) -> str:
+    def ask_regulation(self, query: str, *args, **kwargs) -> str:
         """usage:
           model_df.ask_regulation("質問")
         """
         user_prompt_length = self.get_token_length(query)
-        assert user_prompt_length <= self.user_max_tokens, "システムプロンプトは1480トークン以下: {user_prompt_length}"
+        assert user_prompt_length <= self.user_max_tokens,\
+            "システムプロンプトは1480トークン以下: {user_prompt_length}"
         # システムプロンプトに関連規約を追加
         # list()をつけないと各行にsystem_promptが追加されてしまう
         system_prompt = "\n".join([VectorFrame.system_prompt] +
                                   list(self.text))
         system_prompt_length = self.get_token_length(system_prompt)
-        print(system_prompt)
-        assert system_prompt_length <= 2116, f"システムプロンプトは2116トークン以下 {system_prompt_length}"
+        assert system_prompt_length <= 2116,\
+            f"システムプロンプトは2116トークン以下 {system_prompt_length}"
 
         # ChatGPTに規約を渡していい感じに日本語に直してもらう
         messages = [
@@ -121,14 +119,25 @@ class VectorFrame(pd.DataFrame):
 
 
 if __name__ == "__main__":
+    # データ読込
     model_df = pd.read_csv("data/model-embeddings.csv", usecols=[1, 2])\
         .rename({"１ モデル就業規則": "text"}, axis=1)
+    # arrayとして認識させる
     model_df['embedding'] = model_df['embedding'].apply(eval).apply(np.array)
     model_df = VectorFrame(model_df)
+    # 質問
+    query = "年間休日は何日ですか"
     # ここからAPI Keyが必要
     # 関連規約の抽出
-    related_rules = model_df.search_regulation("年間休日は何日ですか")
-    assert len(related_rules) > 1, "関連する規約がありませんでした。別のキーワードで質問してください。"
-    print("関連規約のトークン長さ:", related_rules.token_length.sum())
-    ans = related_rules.ask_regulation("年間休日は何日ですか")
-    print(ans)
+    regulation = model_df.search_regulation(query)
+    assert len(regulation) > 1, "関連する規約がありませんでした。別のキーワードで質問してください。"
+    print("関連規約のトークン長さ:", regulation.token_length.sum())
+    # 関連規約に基づいたChatGPTからの回答
+    response = regulation.ask_regulation(query)
+    # 質問、関連規約、回答を表示
+    obj = {
+        "query": query,
+        "regulation": "\n".join(regulation.text),
+        "response": response
+    }
+    print(json.dumps(obj, indent=2, ensure_ascii=False))

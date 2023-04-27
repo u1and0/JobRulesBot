@@ -65,10 +65,11 @@ class VectorFrame(pd.DataFrame):
         self["token_length"] = self.text.apply(
             lambda x: len(self.enc.encode(x)))
 
-    def get_token_length(self, s: str):
+    def get_token_length(self, *args: str):
+        s = '\n'.join(args)
         return len(self.enc.encode(s))
 
-    def search_regulation(self, query: str, threshold=0.85, verbose=False):
+    def search_regulation(self, query: str, threshold: float, verbose=False):
         """就業規則に関する質問を与えると、関連性の高い規約を検索して返す
         トークン数がデフォルトで2000未満になるようにして返す。
         verbose=Trueでテキストと類似度を表示する。
@@ -88,26 +89,44 @@ class VectorFrame(pd.DataFrame):
             print("cumsum rules tokens:", filtered.token_length.sum())
         return VectorFrame(filtered)
 
-    def ask_regulation(self, query: str, *args, **kwargs) -> str:
+    def ask_regulation(self,
+                       query: str,
+                       messages: list[Message] = [],
+                       *args,
+                       **kwargs) -> str:
         """usage:
           model_df.ask_regulation("質問")
         """
         user_prompt_length = self.get_token_length(query)
         assert user_prompt_length <= self.user_max_tokens,\
-            "システムプロンプトは1480トークン以下: {user_prompt_length}"
+            f"システムプロンプトは1473トークン以下にしてください。\
+            {user_prompt_length}"
+
         # システムプロンプトに関連規約を追加
         # list()をつけないと各行にsystem_promptが追加されてしまう
         system_prompt = "\n".join([VectorFrame.system_prompt] +
                                   list(self.text))
         system_prompt_length = self.get_token_length(system_prompt)
-        assert system_prompt_length <= 2116,\
-            f"システムプロンプトは2116トークン以下 {system_prompt_length}"
+        limit_token = self.system_max_tokens + \
+            self.get_token_length(VectorFrame.system_prompt) + 2  # 謎の2 改行？
+        assert system_prompt_length <= limit_token,\
+            f"システムプロンプトは{limit_token}トークン以下にしてください。\
+            {system_prompt_length} >= limit_token:{limit_token}"
+
+        # システムプロンプトと質問をプロンプトに追加
+        messages.insert(0, Message(Role.System, system_prompt))
+        messages.append(Message(Role.User, query))
+        # プロンプトのトークン数が制限に収まるように調整
+        while True:
+            message_contents = (i.content for i in messages)
+            all_prompt_length = self.get_token_length(*message_contents)
+            if all_prompt_length <= self.model_token_limit:
+                break
+            messages.pop(1)  # System promptを除いて上から順に会話履歴を削除
+        assert all_prompt_length <= self.model_token_limit,\
+            f"全プロンプトの合計は4096トークン以下 {all_prompt_length}"
 
         # ChatGPTに規約を渡していい感じに日本語に直してもらう
-        messages = [
-            Message(Role.System, system_prompt),
-            Message(Role.User, query),
-        ]
         completion = openai.ChatCompletion.create(
             model=self.model,
             max_tokens=self.max_tokens,

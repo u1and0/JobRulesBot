@@ -1,0 +1,10 @@
+fastapi
+jinja2
+matplotlib
+numpy
+openai
+pandas
+plotly
+scikit-learn
+tiktoken
+uvicorn

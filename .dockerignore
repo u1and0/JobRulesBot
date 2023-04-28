@@ -1,0 +1,9 @@
+/.git/
+/.ipynb_checkpoints/
+/.mypy_cache/
+/__pycache__/
+/note/
+/data/inner
+.gitignore
+LICENSE
+README.md

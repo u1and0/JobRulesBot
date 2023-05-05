@@ -16,8 +16,8 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 # 就業規則ベクターの読み込み
-model_df = pd.read_csv("data/vkijun-embeddings.csv", usecols=[1, 3])
-model_df['embedding'] = model_df['embedding'].apply(eval).apply(np.array)
+model_df = pd.read_json("data/model-embeddings.json")
+# model_df['embedding'] = model_df['embedding'].apply(eval).apply(np.array)
 model_df = VectorFrame(model_df)
 
 

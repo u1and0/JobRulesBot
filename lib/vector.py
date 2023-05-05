@@ -57,6 +57,17 @@ class VectorFrame(pd.DataFrame):
             system_max_tokens=2000,  # system promptは合計で2116
             user_max_tokens=1480,
             **kwargs):
+        """
+        - `model`: 使用するGPTモデルの名前を指定します。
+        - `model_token_limit`: モデルが処理できる最大トークン数を指定します。
+        - `max_tokens`: 生成される回答の最大トークン数を指定します。
+        - `temperature`: 生成される回答のランダム性を調整する温度パラメータを指定します。
+        - `system_max_tokens`: システムプロンプトの最大トークン数を指定します。
+        - `user_max_tokens`: ユーザーの質問の最大トークン数を指定します。
+
+        コンストラクタ内では、各テキストのトークンの長さを計算し、
+        `"token_length"`という列に格納しています。
+        """
         super().__init__(*args, **kwargs)
         self.model = model
         self.model_token_limit = model_token_limit

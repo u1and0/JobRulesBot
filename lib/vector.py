@@ -1,8 +1,12 @@
+"""学習済み就業規則を読み込んで、
+質問に対して最も関連性の高い規約をピックアップし、
+それをシステムプロンプトに読み込まんせて
+ユーザーからの質問に答えるChatGPT API クライアント
+"""
 import json
 from getpass import getpass
 from enum import Enum
 from dataclasses import dataclass
-from collections import UserList
 import os
 import numpy as np
 import pandas as pd
@@ -11,7 +15,7 @@ from openai.embeddings_utils import get_embedding, cosine_similarity
 import tiktoken
 
 try:
-    openai.api_key = os.environ["CHATGPT_API_KEY"]
+    openai.api_key = os.environ["OPENAI_API_KEY"]
 except KeyError:
     openai.api_key = getpass("OpenAI token:")
 

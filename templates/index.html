@@ -3,6 +3,7 @@
   <meta charset="UTF-8">
   <title>就業規則BOT</title>
   <link rel="icon" href="/static/icons8-chatbot.png">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
   <div class="small-text">
     <a target="_blank" href="https://icons8.com/icon/WmDgmNrDhz7f/%E3%83%81%E3%83%A3%E3%83%83%E3%83%88%E3%83%9C%E3%83%83%E3%83%88">チャットボット</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
   </div>
@@ -11,8 +12,11 @@
 </head>
 <body>
   <h1> <img src="/static/icons8-chatbot.png" alt height="32" width="32"> 就業規則BOT </h1>
-  <input type="search" id="keyword" name="keyword" placeholder="就業規則に関することなら何でも聞いてください" size="64">
-  <button onclick="search()">検索</button>
+  <form onsubmit="search();return false;">
+    <input type="search" id="keyword" placeholder="就業規則に関することなら何でも聞いてください" size="64">
+    <!-- <button onclick="search()">検索</button> -->
+    <input type="submit" id="submit" value="&#xf002;" class="fas">
+  </form>
 
   <div id="result">
     <p>回答：</p>

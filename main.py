@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
+"""
+Usage:
+    uvicorn main:app --host=0.0.0.0 --port=8880 --reload
+"""
 import json
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import numpy as np
 import pandas as pd
-from fastapi import FastAPI
 import uvicorn
 from lib.vector import VectorFrame
 
@@ -17,7 +19,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 # 就業規則ベクターの読み込み
 model_df = pd.read_json("data/model-embeddings.json")
-# model_df['embedding'] = model_df['embedding'].apply(eval).apply(np.array)
 model_df = VectorFrame(model_df)
 
 
@@ -54,4 +55,4 @@ async def get_ask(query: str):
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8889)
+    uvicorn.run("main:app")

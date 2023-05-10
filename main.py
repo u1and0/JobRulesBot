@@ -10,7 +10,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import pandas as pd
 import uvicorn
-from lib.vector import VectorFrame
+from lib.vector import VectorFrame, Message
+from lib.cache import Cache
+
+cache = Cache()
 
 VERSION = "v0.1.0"
 # バックエンドの準備
@@ -47,6 +50,17 @@ async def hello():
 async def get_ask(query: str):
     regulations = model_df.search_regulation(query, threshold=0.7)
     response = regulations.ask_regulation(query)
+    print(model_df.get_token_length(response), "tokens")
+    regulatinos_str = '\n'.join(regulations.text)
+    obj = {"query": query, "response": response, "regulation": regulatinos_str}
+    print(json.dumps(obj, indent=2, ensure_ascii=False))
+    return obj
+
+
+@app.post("/ask")
+async def post_ask(query: str, messages: list[Message]):
+    regulations = cache[query]
+    response = regulations.ask_regulation(query, messages)
     print(model_df.get_token_length(response), "tokens")
     regulatinos_str = '\n'.join(regulations.text)
     obj = {"query": query, "response": response, "regulation": regulatinos_str}

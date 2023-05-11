@@ -1,60 +1,55 @@
-from typing import Any
-from collections import namedtuple
-from dataclasses import dataclass, field
+from typing import Any, Optional
+from collections import namedtuple, UserDict
 from functools import lru_cache
 
 CachedResponse = namedtuple("CachedResponse", ["vectorframe", "response"])
 
 
-@dataclass
-class Cache:
+class Cache(UserDict):
     """
     Usage:
 
     >>> cache = Cache()
 
     # キャッシュに値を保存する
-    >>> cache.set("key1", "value1")
+    >>> cache.set('key1', 'value1')
 
     # キャッシュから値を取得する
-    >>> cache.get("key1")
-    "value1"
+    >>> v1 = cache.get('key1')
+    >>> v1 == 'value1'
+    True
 
     # キャッシュに値を保存する
-    >>> cache["key2"] = "value2"
+    >>> cache['key2'] = 'value2'
 
     # キャッシュから値を取得する
-    >>> cache["key2"]
-    "value2"
+    >>> cache['key2']
+    'value2'
 
     # 存在しないキーを指定して値を取得する
-    >>> cache.get("not_exist_key", "default_value")
-    "default_value"
+    >>> cache.get('not_exist_key', 'default_value')
+    'default_value'
     """
-    # dict[query: ["vectorframe", "response"]]
-    cache_dict: dict[str, Any] = field(default_factory=dict)
+    def __hash__(self):
+        """ @lru_cacheをget()につけるために必要。
+        __hash__メソッドはオブジェクトをハッシュ可能にするためのメソッドです。
+        このメソッドを実装することで、@lru_cacheが適用できるようになります。
+        ただし、この実装は単純にオブジェクトのIDをハッシュ値として使用しているため、
+        別のオブジェクトによってIDが再利用された場合に誤った結果が得られる可能性があります。"""
+        return id(self)
 
-    @lru_cache(maxsize=2)
-    def get(self, key: str, default: Any = None) -> Any:
+    @lru_cache(maxsize=3)
+    def __getitem__(self, key, default=None):
         """ 最長未使用頻度。最も長く使用されていないものから破棄
         100個まで値を保持可能。
         """
-        return self.cache_dict.get(key, default)
+        return self.data.get(key, default)
 
-    def set(self, key: str, value: Any) -> None:
-        self.cache_dict[key] = value
-
-    def __getitem__(self, key: str, default: Any = None) -> Any:
-        return self.get(key, default)
-
-    def __setitem__(self, key: str, value: Any) -> None:
-        self.set(key, value)
-
-    def __contains__(self, key: str) -> bool:
-        return key in self.cache_dict
+    def set(self, key, value):
+        self.data[key] = value
 
     def __str__(self) -> str:
-        return "Cache({})".format(str(self.cache_dict))
+        return "Cache({})".format(str(self.data))
 
     def __repr__(self) -> str:
         return str(self)

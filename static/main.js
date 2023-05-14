@@ -25,6 +25,9 @@ function refresh() {
     regulationElem.innerHTML = "";
     responseElem.innerHTML = "";
     details.removeAttribute("open");
+    if (anotherForm) {
+        anotherForm.innerHTML = "";
+    }
 }
 function search() {
     refresh();
@@ -41,8 +44,10 @@ function search() {
         }
     })
         .then((data) => {
+        console.debug(data);
         let i = 0;
-        const text = data.response;
+        const lastContent = data.messages.length - 1;
+        const text = data.messages[lastContent].content;
         const intervalID = setInterval(() => {
             responseElem.textContent += text.charAt(i);
             i++;

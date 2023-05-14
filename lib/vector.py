@@ -163,7 +163,7 @@ if __name__ == "__main__":
     query = "年間休日は何日ですか"
     # ここからAPI Keyが必要
     # 関連規約の抽出
-    regulation = model_df.search_regulation(query)
+    regulation = model_df.search_regulation(query, 0.8)
     assert len(regulation) > 1, "関連する規約がありませんでした。別のキーワードで質問してください。"
     print("関連規約のトークン長さ:", regulation.token_length.sum())
     # 関連規約に基づいたChatGPTからの回答

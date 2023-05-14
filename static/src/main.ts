@@ -28,7 +28,9 @@ function refresh() {
   regulationElem.innerHTML = "";
   responseElem.innerHTML = "";
   details.removeAttribute("open");
-  // anotherForm.innerHTML = "";
+  if (anotherForm) {
+    anotherForm.innerHTML = "";
+  }
 }
 
 // バックエンドに規約と回答を問い合わせ
@@ -46,9 +48,11 @@ function search() {
       }
     })
     .then((data) => {
+      console.debug(data);
       // 20msecごとに一文字ずつtextをresponseElemに表示する
       let i = 0;
-      const text = data.response;
+      const lastContent = data.messages.length - 1;
+      const text = data.messages[lastContent].content;
       const intervalID = setInterval(() => {
         responseElem.textContent += text.charAt(i);
         i++;

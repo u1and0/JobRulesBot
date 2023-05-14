@@ -1,6 +1,6 @@
 """
 maxsizeに指定された数までのキャッシュの値を
-保持するクラス「LRUCache」を定義しています。
+保持するクラス「LRUDict」を定義しています。
 指定したキーごとに保持する値がある場合、
 データを末尾に移動し 一番古い値を先頭から
 削除する仕組みが備わっています。
@@ -11,7 +11,7 @@ from typing import Optional
 from collections import OrderedDict, UserDict
 
 
-class LRUCache(UserDict):
+class LRUDict(UserDict):
     """
     getや__getitem__で参照されるたびに要素を末尾に移動します。
     __setitem__されたばかりの要素も末尾に追加されます。
@@ -20,7 +20,7 @@ class LRUCache(UserDict):
 
     Usage:
 
-    >>> cache = LRUCache(maxsize=3)
+    >>> cache = LRUDict(maxsize=3)
 
     # キャッシュに値を保存する
     >>> cache["key1"] = "value1"
@@ -34,7 +34,7 @@ class LRUCache(UserDict):
     'default_value'
 
     # インスタンス化
-    >>> cache = LRUCache(maxsize=3, a=1, b=2, c=3)
+    >>> cache = LRUDict(maxsize=3, a=1, b=2, c=3)
 
     >>> cache
     OrderedDict([('a', 1), ('b', 2), ('c', 3)])

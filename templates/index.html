@@ -14,11 +14,11 @@
   <h1> <img src="/static/icons8-chatbot.png" alt height="32" width="32"> 就業規則BOT </h1>
   <form onsubmit="search();return false;">
     <input type="search" id="keyword" placeholder="就業規則に関することなら何でも聞いてください" size="64">
-    <input type="submit" id="submit" value="&#xf002;" class="fas">
+    <button><i class="fas fa-paper-plane"></i></button>
   </form>
 
   <div id="result">
-    <p>回答：</p>
+    <p id="query"></p>
     <p id="response"></p>
     <details>
       <summary>詳細</summary>

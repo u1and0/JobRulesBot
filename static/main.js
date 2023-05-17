@@ -1,4 +1,6 @@
 "use strict";
+const keywordElem = document.getElementById("keyword");
+const queryElem = document.getElementById("query");
 const responseElem = document.getElementById("response");
 const regulationElem = document.getElementById("regulation");
 const details = document.querySelector("details");
@@ -12,16 +14,16 @@ function createAnotherForm() {
     input.setAttribute("id", "next-keyword");
     input.setAttribute("placeholder", "詳細についてさらに質問します");
     input.setAttribute("size", "64");
-    const submit = document.createElement("input");
-    submit.setAttribute("type", "submit");
-    submit.setAttribute("id", "next-submit");
-    submit.setAttribute("value", "&#xf002;");
-    submit.setAttribute("class", "fas");
+    const icon = document.createElement("i");
+    icon.classList.add("fas", "fa-paper-plane");
+    const button = document.createElement("button");
+    button.appendChild(icon);
     form.appendChild(input);
-    form.appendChild(submit);
+    form.appendChild(button);
     document.body.appendChild(form);
 }
-function refresh() {
+function refreshPage() {
+    queryElem.innerHTML = "";
     regulationElem.innerHTML = "";
     responseElem.innerHTML = "";
     details.removeAttribute("open");
@@ -30,11 +32,13 @@ function refresh() {
     }
 }
 function search() {
-    refresh();
-    const keyword = document.getElementById("keyword").value;
-    if (keyword === null)
+    refreshPage();
+    const queryWord = keywordElem.value;
+    if (queryWord === null)
         return;
-    fetch(`/ask/${encodeURIComponent(keyword)}`)
+    keywordElem.textContent = "";
+    queryElem.textContent = queryWord;
+    fetch(`/ask/${encodeURIComponent(queryWord)}`)
         .then((response) => {
         if (response.ok) {
             return response.json();
@@ -46,8 +50,8 @@ function search() {
         .then((data) => {
         console.debug(data);
         let i = 0;
-        const lastContent = data.messages.length - 1;
-        const text = data.messages[lastContent].content;
+        const lastIndex = data.messages.length - 1;
+        const text = data.messages[lastIndex].content;
         const intervalID = setInterval(() => {
             responseElem.textContent += text.charAt(i);
             i++;

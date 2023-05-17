@@ -11,7 +11,7 @@ import pandas as pd
 import tiktoken
 from openai.embeddings_utils import get_embedding
 
-from . import VectorFrame
+from .vector import VectorFrame
 
 MODEL = "text-embedding-ada-002"
 ENC = tiktoken.encoding_for_model(MODEL)

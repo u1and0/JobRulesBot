@@ -11,8 +11,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import pandas as pd
 import uvicorn
-from lib.vector import VectorFrame, Message, Role
-from lib.cache import LRUDict
+from lib import VectorFrame, Message, Role
+from lib import LRUDict
 
 VERSION = "v0.1.0"
 # バックエンドの準備

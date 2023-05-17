@@ -57,7 +57,7 @@ async def get_ask(query: str):
         print("INFO:    Get content from cache.")
     else:
         # 関連規約の抽出
-        regulations = model_df.search_regulation(query, threshold=0.7)
+        regulations = model_df.search_regulation(query, threshold=0.8)
         # 回答の取得
         response = regulations.ask_regulation(query)
         # 回答を保存

@@ -3,7 +3,6 @@ const queryElem = document.getElementById("query");
 const responseElem = document.getElementById("response");
 const regulationElem = document.getElementById("regulation");
 const details = document.querySelector("details");
-const anotherForm = document.getElementById("another-form");
 
 // 関連規約についてさらに質問するフォームを作成
 function createAnotherForm() {
@@ -32,8 +31,9 @@ function refreshPage() {
   regulationElem.innerHTML = "";
   responseElem.innerHTML = "";
   details.removeAttribute("open");
+  const anotherForm = document.getElementById("another-form");
   if (anotherForm) {
-    anotherForm.innerHTML = "";
+    anotherForm.parentNode.removeChild(anotherForm);
   }
 }
 
@@ -43,7 +43,7 @@ function search() {
   // Search keyword
   const queryWord = keywordElem.value;
   if (queryWord === null) return;
-  keywordElem.textContent = "";
+  keywordElem.value = "";
   queryElem.textContent = queryWord;
   fetch(`/ask/${encodeURIComponent(queryWord)}`)
     .then((response) => {

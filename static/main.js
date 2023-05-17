@@ -4,7 +4,6 @@ const queryElem = document.getElementById("query");
 const responseElem = document.getElementById("response");
 const regulationElem = document.getElementById("regulation");
 const details = document.querySelector("details");
-const anotherForm = document.getElementById("another-form");
 function createAnotherForm() {
     const form = document.createElement("form");
     form.setAttribute("onsubmit", "moreSearch(); return false;");
@@ -27,8 +26,9 @@ function refreshPage() {
     regulationElem.innerHTML = "";
     responseElem.innerHTML = "";
     details.removeAttribute("open");
+    const anotherForm = document.getElementById("another-form");
     if (anotherForm) {
-        anotherForm.innerHTML = "";
+        anotherForm.parentNode.removeChild(anotherForm);
     }
 }
 function search() {
@@ -36,7 +36,7 @@ function search() {
     const queryWord = keywordElem.value;
     if (queryWord === null)
         return;
-    keywordElem.textContent = "";
+    keywordElem.value = "";
     queryElem.textContent = queryWord;
     fetch(`/ask/${encodeURIComponent(queryWord)}`)
         .then((response) => {

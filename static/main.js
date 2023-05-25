@@ -4,6 +4,7 @@ const queryElem = document.getElementById("query");
 const responseElem = document.getElementById("response");
 const regulationElem = document.getElementById("regulation");
 const details = document.querySelector("details");
+const errorsElem = document.getElementById("error-message");
 function createAnotherForm() {
     const form = document.createElement("form");
     form.setAttribute("onsubmit", "moreSearch(); return false;");
@@ -44,7 +45,9 @@ function search() {
             return response.json();
         }
         else {
-            throw new Error(`Net work error ${response.status} ${response.text}`);
+            const message = `Net work error ${response.status} ${response.text}`;
+            errorsElem.textContent = message;
+            throw new Error(message);
         }
     })
         .then((data) => {
@@ -61,5 +64,5 @@ function search() {
         }, 20);
     })
         .then(createAnotherForm)
-        .catch((error) => console.error(`Error:${error}`));
+        .catch(console.error);
 }

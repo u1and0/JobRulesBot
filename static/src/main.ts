@@ -3,6 +3,7 @@ const queryElem = document.getElementById("query");
 const responseElem = document.getElementById("response");
 const regulationElem = document.getElementById("regulation");
 const details = document.querySelector("details");
+const errorsElem = document.getElementById("error-message");
 
 // 関連規約についてさらに質問するフォームを作成
 function createAnotherForm() {
@@ -50,7 +51,9 @@ function search() {
       if (response.ok) {
         return response.json();
       } else {
-        throw new Error(`Net work error ${response.status} ${response.text}`);
+        const message = `Net work error ${response.status} ${response.text}`;
+        errorsElem.textContent = message;
+        throw new Error(message);
       }
     })
     .then((data) => {
@@ -67,5 +70,5 @@ function search() {
       }, 20);
     })
     .then(createAnotherForm)
-    .catch((error) => console.error(`Error:${error}`));
+    .catch(console.error);
 }

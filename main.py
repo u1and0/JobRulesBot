@@ -6,10 +6,11 @@ Usage:
 import json
 from collections import namedtuple
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.exceptions import RequestValidationError
 import pandas as pd
 import uvicorn
 import openai
@@ -53,6 +54,15 @@ async def hello():
     return {"message": "hello job rules bot!"}
 
 
+@app.exception_handler(RequestValidationError)
+async def http_exception_handler(request, exc):
+    response = JSONResponse(status_code=exc.status_code,
+                            content={"message": exc.detail})
+    response.headers["Location"] = "/error"
+    response.status_code = 302
+    return response
+
+
 @app.get("/ask/{query}")
 async def get_ask(query: str):
     """first question"""
@@ -63,11 +73,15 @@ async def get_ask(query: str):
     else:
         # 関連規約の抽出
         regulations = model_df.search_regulation(query, threshold=0.8)
+
         # 回答の取得
         try:
             response = regulations.ask_regulation(query)
-        except openai.error.InvalidRequestError as e:
-            return JSONResponse({"error": e}, status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"[Error]:    {e}")
+            raise HTTPException(status_code=500,
+                                detail="Internal server error {e}")
+
         # 回答を保存
         cache[query] = ResponseCache(regulations, response)
         print("INFO:    Use OPENAI API {} tokens".format(

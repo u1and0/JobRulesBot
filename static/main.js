@@ -1,6 +1,7 @@
 "use strict";
 const keywordElem = document.getElementById("keyword");
 const queryElem = document.getElementById("query");
+const spinner = document.getElementById("spinner");
 const responseElem = document.getElementById("response");
 const regulationElem = document.getElementById("regulation");
 const details = document.querySelector("details");
@@ -25,6 +26,7 @@ function createAnotherForm() {
 function refreshPage() {
     queryElem.innerHTML = "";
     regulationElem.innerHTML = "";
+    errorsElem.innerHTML = "";
     responseElem.innerHTML = "";
     details.removeAttribute("open");
     const anotherForm = document.getElementById("another-form");
@@ -34,6 +36,7 @@ function refreshPage() {
 }
 function search() {
     refreshPage();
+    spinner.style.display = "flex";
     const queryWord = keywordElem.value;
     if (queryWord === null)
         return;
@@ -41,6 +44,7 @@ function search() {
     queryElem.textContent = queryWord;
     fetch(`/ask/${encodeURIComponent(queryWord)}`)
         .then((response) => {
+        spinner.style.display = "none";
         if (response.ok) {
             return response.json();
         }

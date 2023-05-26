@@ -45,7 +45,7 @@ class VectorFrame(pd.DataFrame):
 最後に必ず関連規約の番号を案内してください。
 
 # 関連規約
-    """  # 116 tokens
+    """  # 113 tokens
 
     def __init__(
             self,
@@ -54,7 +54,7 @@ class VectorFrame(pd.DataFrame):
             model_token_limit=4096,
             max_tokens=500,
             temperature=0.2,
-            system_max_tokens=2000,  # system promptは合計で2116
+            system_max_tokens=2000,  # system promptは合計で2113
             user_max_tokens=1480,
             **kwargs):
         """
@@ -77,8 +77,9 @@ class VectorFrame(pd.DataFrame):
         self.user_max_tokens = user_max_tokens
         # 各テキストのトークンの長さを取得
         self.enc = tiktoken.encoding_for_model(self.model)
-        self["token_length"] = self.text.apply(
-            lambda x: len(self.enc.encode(x)))
+        if "text" in self.columns:
+            self["token_length"] = self.text.apply(
+                lambda x: len(self.enc.encode(x)))
 
     def get_token_length(self, *args: str):
         s = '\n'.join(args)
